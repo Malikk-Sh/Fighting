@@ -1,13 +1,28 @@
-// Визуальные эффекты: частицы-искры, ударная волна, screen shake, hit-stop.
+// Визуальные эффекты: спрайтовые чернильные анимации (assets/fx) с откатом
+// на процедурные частицы, ударная волна, screen shake, hit-stop.
+
+import { fxImgs } from './sprites.js';
+
+const FX_FRAMES = 8; // листы 4x2
 
 export const fx = {
   particles: [],
   rings: [],
+  anims: [],
   shake: 0,
   freezeUntil: 0,
 
   // Вспышка/искры в точке удара (мировые координаты).
   burst(x, y, power = 1) {
+    if (fxImgs.ready) {
+      this.anims.push({
+        kind: 'burst', x, y,
+        age: 0, dur: 0.5,
+        size: 240 * power,
+        flip: Math.random() < 0.5 ? -1 : 1,
+      });
+      return;
+    }
     const n = Math.round(16 * power);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -26,6 +41,17 @@ export const fx = {
     this.rings.push({ x, y, age: 0, life: 0.28, power });
   },
 
+  // Дуга удара за клинком (в момент фазы strike).
+  slash(x, y, facing) {
+    if (!fxImgs.ready) return; // без ассетов достаточно следа в спрайте бойца
+    this.anims.push({
+      kind: 'slash', x, y,
+      age: 0, dur: 0.45,
+      size: 340,
+      flip: -facing, // выпуклость дуги — в сторону удара
+    });
+  },
+
   addShake(m) { this.shake = Math.min(26, this.shake + m); },
 
   hitStop(ms) { this.freezeUntil = Math.max(this.freezeUntil, performance.now() + ms); },
@@ -35,6 +61,10 @@ export const fx = {
   update(dt) {
     this.shake *= Math.pow(0.0005, dt);
     if (this.shake < 0.3) this.shake = 0;
+    for (let i = this.anims.length - 1; i >= 0; i--) {
+      this.anims[i].age += dt;
+      if (this.anims[i].age >= this.anims[i].dur) this.anims.splice(i, 1);
+    }
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.age += dt;
@@ -60,6 +90,19 @@ export const fx = {
 
   // Рисуется в мировых координатах (после установки камеры).
   draw(ctx) {
+    for (const a of this.anims) {
+      const img = fxImgs.imgs[a.kind];
+      const frame = Math.min(FX_FRAMES - 1, Math.floor((a.age / a.dur) * FX_FRAMES));
+      const cw = img.width / 4;
+      const ch = img.height / 2;
+      const dw = a.size;
+      const dh = a.size * (ch / cw);
+      ctx.save();
+      ctx.translate(a.x, a.y);
+      ctx.scale(a.flip, 1);
+      ctx.drawImage(img, (frame % 4) * cw, Math.floor(frame / 4) * ch, cw, ch, -dw / 2, -dh / 2, dw, dh);
+      ctx.restore();
+    }
     for (const r of this.rings) {
       const t = r.age / r.life;
       const rad = 12 + t * 90 * r.power;
@@ -93,6 +136,7 @@ export const fx = {
   reset() {
     this.particles.length = 0;
     this.rings.length = 0;
+    this.anims.length = 0;
     this.shake = 0;
     this.freezeUntil = 0;
   },

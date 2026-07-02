@@ -45,12 +45,13 @@
     </div>
     <button id="btn-attack" type="button">
       <span id="attack-ring"></span>
-      <span id="attack-label">УДАР</span>
+      <span id="attack-label"></span>
     </button>
   </div>
 
   <!-- Меню -->
   <div id="screen-menu" class="screen">
+    <img class="menu-decor" src="assets/ui/katanas.png" alt="">
     <h1 class="logo"><span>ARENA</span><span class="logo-2">STRIKE</span></h1>
     <p class="tagline">Дуэль на два устройства • 2 удара до победы</p>
     <div class="menu-box">
@@ -77,7 +78,10 @@
 
   <!-- Итог матча -->
   <div id="screen-over" class="screen overlay hidden">
-    <h2 id="over-title">ПОБЕДА</h2>
+    <div class="over-hero">
+      <img id="over-banner" src="assets/ui/banner-win.png" alt="">
+      <h2 id="over-title">ПОБЕДА</h2>
+    </div>
     <p id="over-sub"></p>
     <div class="menu-box">
       <button id="btn-rematch" class="btn btn-primary" type="button">Играть снова</button>

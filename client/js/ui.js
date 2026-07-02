@@ -101,6 +101,7 @@ export const ui = {
     const title = $('over-title');
     title.textContent = win ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
     title.className = win ? 'win' : 'lose';
+    $('over-banner').src = win ? 'assets/ui/banner-win.png' : 'assets/ui/banner-lose.png';
     $('over-sub').textContent = sub || '';
     $('over-status').textContent = '';
     $('btn-rematch').disabled = false;
