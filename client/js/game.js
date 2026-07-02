@@ -122,6 +122,10 @@ export class Game {
       const latest = sample.latest;
       for (let i = 0; i < 2; i++) {
         const p = latest.p[i];
+        // дуга удара — в момент перехода в фазу strike
+        if (p.st === 'strike' && this.views[i].st !== 'strike') {
+          fx.slash(sample.x[i] + p.f * 110, -120, p.f);
+        }
         this.views[i].setState(p.st, now);
         this.views[i].facing = p.f;
         this.views[i].x = sample.x[i];

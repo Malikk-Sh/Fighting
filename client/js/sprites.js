@@ -18,6 +18,29 @@ export const bg = {
   imgs: {},
 };
 
+// Спрайтовые эффекты (assets/fx): красный взрыв попадания и дуга удара.
+export const fxImgs = {
+  ready: false,
+  imgs: {},
+};
+
+async function loadFx() {
+  try {
+    await Promise.all(['burst', 'slash'].map(
+      (name) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = 'assets/fx/' + name + '.png';
+        fxImgs.imgs[name] = img;
+      }),
+    ));
+    fxImgs.ready = true;
+  } catch {
+    fxImgs.ready = false;
+  }
+}
+
 async function loadBg() {
   try {
     await Promise.all(['sky', 'far', 'near', 'ground'].map(
@@ -53,7 +76,8 @@ async function loadChar(char) {
 }
 
 export async function loadSprites() {
-  loadBg(); // фон не блокирует бойцов
+  loadBg(); // фон и эффекты не блокируют бойцов
+  loadFx();
   try {
     await Promise.all(CHARS.map(loadChar));
     sprites.ready = true;
