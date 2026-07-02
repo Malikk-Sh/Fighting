@@ -130,7 +130,7 @@ export class Input {
       if (this.btn.classList.contains('cooldown')) {
         this.btn.classList.remove('cooldown');
         this.ring.style.background = 'none';
-        this.label.textContent = 'УДАР';
+        this.label.textContent = ''; // кулак на кнопке говорит сам за себя
       }
       if (this.enabled) this.btn.classList.add('ready-pulse');
     }
