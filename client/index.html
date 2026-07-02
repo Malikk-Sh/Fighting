@@ -19,6 +19,15 @@
 <body>
   <canvas id="game"></canvas>
 
+  <!-- Полноэкранный режим -->
+  <button id="btn-fs" type="button" title="Во весь экран" aria-label="Во весь экран">⛶</button>
+
+  <!-- Обязательная горизонтальная ориентация на мобильных -->
+  <div id="rotate-overlay">
+    <div class="rotate-phone">📱</div>
+    <p>Поверните устройство горизонтально —<br>бой идёт только в альбомном режиме</p>
+  </div>
+
   <!-- HUD -->
   <div id="hud" class="hidden">
     <div class="hp-row">
