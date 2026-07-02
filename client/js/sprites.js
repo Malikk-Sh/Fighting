@@ -1,30 +1,37 @@
-// Спрайтовый рендер бойца: листы 4x2, нарезанные препроцессором в atlas.json.
-// Если ассеты не загрузились, игра откатывается на процедурного бойца (fighter.js).
+// Спрайтовый рендер бойцов: листы 4x2, нарезанные препроцессором в atlas.json.
+// Игрок 1 — «Ронин», игрок 2 — «Они-Маска». Если ассеты не загрузились,
+// игра откатывается на процедурного бойца (fighter.js).
 
-const BASE = 'assets/ronin/';
-const WORLD_H = 205; // высота бойца в стойке, мировые единицы
+const CHARS = [
+  { key: 'ronin', base: 'assets/ronin/', worldH: 205 },
+  { key: 'oni', base: 'assets/oni/', worldH: 220 },
+];
 
 export const sprites = {
   ready: false,
-  atlas: null,
-  sheets: {},
+  chars: {}, // key -> { atlas, sheets: {name: Image} }
 };
+
+async function loadChar(char) {
+  const res = await fetch(char.base + 'atlas.json');
+  if (!res.ok) throw new Error('no atlas');
+  const atlas = await res.json();
+  const sheets = {};
+  await Promise.all(Object.entries(atlas.sheets).map(
+    ([name, sheet]) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = char.base + sheet.file;
+      sheets[name] = img;
+    }),
+  ));
+  sprites.chars[char.key] = { atlas, sheets, worldH: char.worldH };
+}
 
 export async function loadSprites() {
   try {
-    const res = await fetch(BASE + 'atlas.json');
-    if (!res.ok) return false;
-    const atlas = await res.json();
-    const loaded = await Promise.all(Object.entries(atlas.sheets).map(
-      ([name, sheet]) => new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve([name, img]);
-        img.onerror = reject;
-        img.src = BASE + sheet.file;
-      }),
-    ));
-    for (const [name, img] of loaded) sprites.sheets[name] = img;
-    sprites.atlas = atlas;
+    await Promise.all(CHARS.map(loadChar));
     sprites.ready = true;
   } catch {
     sprites.ready = false;
@@ -48,6 +55,7 @@ const ANIM = {
 export class SpriteFighter {
   constructor(idx) {
     this.idx = idx;
+    this.char = sprites.chars[CHARS[idx].key];
     this.x = 0;
     this.facing = idx === 0 ? 1 : -1;
     this.st = 'idle';
@@ -87,13 +95,13 @@ export class SpriteFighter {
     } else {
       index = Math.min(anim.frames.length - 1, Math.floor((t / anim.dur) * anim.frames.length));
     }
-    return { anim, frame: sprites.atlas.sheets[anim.sheet].frames[anim.frames[index]] };
+    return { anim, frame: this.char.atlas.sheets[anim.sheet].frames[anim.frames[index]] };
   }
 
   draw(ctx) {
     const { anim, frame } = this._frame();
-    const img = sprites.sheets[anim.sheet];
-    const s = WORLD_H / sprites.atlas.unitHeight;
+    const img = this.char.sheets[anim.sheet];
+    const s = this.char.worldH / this.char.atlas.unitHeight;
 
     ctx.save();
     ctx.translate(this.x, 0);
