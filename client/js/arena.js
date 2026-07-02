@@ -36,11 +36,22 @@ function drawSpriteArena(ctx, v) {
   const sW = sky.width * sScale, sH = sky.height * sScale;
   ctx.drawImage(sky, w / 2 - sW / 2 - worldShift * 0.05, groundY - sH, sW, sH);
 
-  // дальний план: бамбук и горящий корабль по краям арены
+  // земля: движется вместе с миром (рисуется до дальнего плана,
+  // чтобы его туманная кромка легла поверх стыка)
+  const ground = bg.imgs.ground;
+  const gW = Math.max(w * 1.5, ARENA_W * scale * 1.3);
+  ctx.drawImage(ground, w / 2 - gW / 2 - worldShift, groundY, gW, h - groundY);
+  // лёгкое затемнение пола, чтобы белые бойцы не сливались
+  ctx.fillStyle = 'rgba(25, 8, 8, 0.14)';
+  ctx.fillRect(0, groundY, w, h - groundY);
+
+  // дальний план: бамбук и горящий корабль; нижняя «туманная» кромка
+  // заходит на пол и прячет шов между планами
   const far = bg.imgs.far;
   const fW = Math.max(w * 1.3, ARENA_W * scale * 1.05);
   const fH = fW * far.height / far.width;
-  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, groundY - fH + 4, fW, fH);
+  const farOverlap = Math.min(26, (h - groundY) * 0.18);
+  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, groundY - fH + farOverlap, fW, fH);
 
   // тёмная дымка, отделяющая задник от зоны боя (бойцы читаются лучше)
   const depth = ctx.createLinearGradient(0, groundY - fH * 0.8, 0, groundY);
@@ -49,17 +60,13 @@ function drawSpriteArena(ctx, v) {
   ctx.fillStyle = depth;
   ctx.fillRect(0, groundY - fH * 0.8, w, fH * 0.8);
 
-  // земля: движется вместе с миром
-  const ground = bg.imgs.ground;
-  const gW = Math.max(w * 1.5, ARENA_W * scale * 1.3);
-  ctx.drawImage(ground, w / 2 - gW / 2 - worldShift, groundY, gW, h - groundY);
-  // лёгкое затемнение пола, чтобы белые бойцы не сливались
-  ctx.fillStyle = 'rgba(25, 8, 8, 0.14)';
-  ctx.fillRect(0, groundY, w, h - groundY);
-
-  // кромка помоста
-  ctx.fillStyle = 'rgba(255, 248, 235, 0.3)';
-  ctx.fillRect(0, groundY, w, 2.5);
+  // «сшивка» планов: тёмная дымка от горизонта вглубь пола
+  const seamH = Math.max(30, (h - groundY) * 0.38);
+  const seam = ctx.createLinearGradient(0, groundY + farOverlap - 2, 0, groundY + farOverlap + seamH);
+  seam.addColorStop(0, 'rgba(14, 3, 4, 0.5)');
+  seam.addColorStop(1, 'rgba(14, 3, 4, 0)');
+  ctx.fillStyle = seam;
+  ctx.fillRect(0, groundY + farOverlap - 2, w, seamH);
 
   // границы арены — красные метки
   const worldToScreenX = (wx) => (wx - camX) * scale + w / 2;
