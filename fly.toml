@@ -1,0 +1,35 @@
+# Конфиг Fly.io. Деплой: `fly launch --copy-config` (первый раз) или `fly deploy`.
+#
+# ВАЖНО для пинга: primary_region — регион, где живёт сервер.
+# Выберите ближайший к игрокам: fra (Франкфурт), waw (Варшава), arn (Стокгольм),
+# otp (Бухарест), ams (Амстердам). Список: `fly platform regions`.
+
+# имя приложения глобально уникально — поменяйте, если занято
+app = "arena-strike"
+primary_region = "fra"
+
+[build]
+  # собирается из Dockerfile в корне репозитория
+
+[env]
+  HOST = "0.0.0.0"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # авто-остановка простаивающей машины; активные WebSocket-соединения
+  # считаются нагрузкой, поэтому во время матча сервер не заснёт
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

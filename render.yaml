@@ -1,0 +1,18 @@
+# Blueprint для Render.com: New → Blueprint → выбрать этот репозиторий.
+#
+# ВАЖНО для пинга: region — где живёт сервер. Доступно: frankfurt, oregon,
+# ohio, virginia, singapore. Для Европы/СНГ ближе всего frankfurt.
+#
+# Примечание: на плане free сервис засыпает после ~15 минут простоя —
+# первое подключение будет медленным (~30-60 с), дальше пинг честный.
+
+services:
+  - type: web
+    name: arena-strike
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
