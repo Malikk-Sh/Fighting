@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#120b26">
+  <title>ARENA STRIKE — онлайн-файтинг</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🥊</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Адрес WebSocket-сервера.
+    // По умолчанию берётся хост текущей страницы (работает и локально, и на деплое,
+    // если сервер сам раздаёт клиент). Если фронтенд задеплоен отдельно от сервера —
+    // укажите адрес сервера здесь, например: window.GAME_WS_URL = 'wss://my-game.onrender.com';
+    // Либо откройте страницу с параметром ?server=my-game.onrender.com
+    window.GAME_WS_URL = '';
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hp-row">
+      <div class="hp-side left">
+        <div class="hp-name" id="name-0">ИГРОК 1</div>
+        <div class="hp-bar" id="hp-0"><div class="hp-seg"><i></i></div><div class="hp-seg"><i></i></div></div>
+      </div>
+      <div id="ping">— мс</div>
+      <div class="hp-side right">
+        <div class="hp-name" id="name-1">ИГРОК 2</div>
+        <div class="hp-bar" id="hp-1"><div class="hp-seg"><i></i></div><div class="hp-seg"><i></i></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Анонсы: 3..2..1..БОЙ -->
+  <div id="announce" class="hidden"></div>
+
+  <!-- Управление -->
+  <div id="controls" class="hidden">
+    <div id="stick-zone">
+      <div id="stick-base" class="hidden"><div id="stick-thumb"></div></div>
+      <div id="stick-hint">◀ &nbsp;двигайтесь&nbsp; ▶</div>
+    </div>
+    <button id="btn-attack" type="button">
+      <span id="attack-ring"></span>
+      <span id="attack-label">УДАР</span>
+    </button>
+  </div>
+
+  <!-- Меню -->
+  <div id="screen-menu" class="screen">
+    <h1 class="logo"><span>ARENA</span><span class="logo-2">STRIKE</span></h1>
+    <p class="tagline">Дуэль на два устройства • 2 удара до победы</p>
+    <div class="menu-box">
+      <button id="btn-create" class="btn btn-primary" type="button">Создать комнату</button>
+      <div class="join-row">
+        <input id="input-code" type="text" inputmode="latin" autocomplete="off" autocapitalize="characters" maxlength="4" placeholder="КОД">
+        <button id="btn-join" class="btn" type="button">Войти</button>
+      </div>
+      <p id="menu-error" class="error hidden"></p>
+    </div>
+    <p class="hint">A / D — движение, Пробел — удар (на клавиатуре)</p>
+  </div>
+
+  <!-- Ожидание соперника -->
+  <div id="screen-wait" class="screen hidden">
+    <p class="wait-title">Код комнаты</p>
+    <div id="room-code" title="Нажмите, чтобы скопировать">----</div>
+    <p class="wait-sub">Второй игрок вводит этот код на своём устройстве</p>
+    <p class="wait-url" id="wait-url"></p>
+    <div class="spinner"></div>
+    <p class="wait-sub dim">Ожидание соперника…</p>
+    <button id="btn-cancel" class="btn btn-ghost" type="button">Отмена</button>
+  </div>
+
+  <!-- Итог матча -->
+  <div id="screen-over" class="screen overlay hidden">
+    <h2 id="over-title">ПОБЕДА</h2>
+    <p id="over-sub"></p>
+    <div class="menu-box">
+      <button id="btn-rematch" class="btn btn-primary" type="button">Играть снова</button>
+      <button id="btn-menu" class="btn btn-ghost" type="button">В меню</button>
+    </div>
+    <p id="over-status" class="dim"></p>
+  </div>
+
+  <!-- Сообщения (обрыв связи и т.п.) -->
+  <div id="screen-msg" class="screen overlay hidden">
+    <h2 id="msg-title"></h2>
+    <p id="msg-text"></p>
+    <button id="btn-msg-menu" class="btn btn-primary" type="button">В меню</button>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
