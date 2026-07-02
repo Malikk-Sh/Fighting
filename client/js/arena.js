@@ -2,6 +2,7 @@
 // Три слоя силуэтов с разным коэффициентом параллакса + пол в мировых координатах.
 
 import { ARENA_W, WALL_PAD } from './game-const.js';
+import { bg } from './sprites.js';
 
 function sr(i) { // детерминированный псевдослучайный [0..1)
   const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
@@ -19,6 +20,75 @@ function layerFeatures(w, camX, scale, parallax, spacing, fn) {
 }
 
 export function drawArena(ctx, v) {
+  if (bg.ready) return drawSpriteArena(ctx, v);
+  return drawProceduralArena(ctx, v);
+}
+
+/* Арена из сгенерированных слоёв (assets/bg): небо, дальний план,
+ * земля, ближнее обрамление — каждый со своим коэффициентом параллакса. */
+function drawSpriteArena(ctx, v) {
+  const { w, h, camX, scale, groundY } = v;
+  const worldShift = (camX - ARENA_W / 2) * scale;
+
+  // небо: якорь по нижней кромке (горизонту), лёгкий параллакс
+  const sky = bg.imgs.sky;
+  const sScale = Math.max(groundY / sky.height, (w * 1.15) / sky.width);
+  const sW = sky.width * sScale, sH = sky.height * sScale;
+  ctx.drawImage(sky, w / 2 - sW / 2 - worldShift * 0.05, groundY - sH, sW, sH);
+
+  // дальний план: бамбук и горящий корабль по краям арены
+  const far = bg.imgs.far;
+  const fW = Math.max(w * 1.3, ARENA_W * scale * 1.05);
+  const fH = fW * far.height / far.width;
+  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, groundY - fH + 4, fW, fH);
+
+  // тёмная дымка, отделяющая задник от зоны боя (бойцы читаются лучше)
+  const depth = ctx.createLinearGradient(0, groundY - fH * 0.8, 0, groundY);
+  depth.addColorStop(0, 'rgba(12, 2, 3, 0)');
+  depth.addColorStop(1, 'rgba(12, 2, 3, 0.42)');
+  ctx.fillStyle = depth;
+  ctx.fillRect(0, groundY - fH * 0.8, w, fH * 0.8);
+
+  // земля: движется вместе с миром
+  const ground = bg.imgs.ground;
+  const gW = Math.max(w * 1.5, ARENA_W * scale * 1.3);
+  ctx.drawImage(ground, w / 2 - gW / 2 - worldShift, groundY, gW, h - groundY);
+  // лёгкое затемнение пола, чтобы белые бойцы не сливались
+  ctx.fillStyle = 'rgba(25, 8, 8, 0.14)';
+  ctx.fillRect(0, groundY, w, h - groundY);
+
+  // кромка помоста
+  ctx.fillStyle = 'rgba(255, 248, 235, 0.3)';
+  ctx.fillRect(0, groundY, w, 2.5);
+
+  // границы арены — красные метки
+  const worldToScreenX = (wx) => (wx - camX) * scale + w / 2;
+  ctx.strokeStyle = 'rgba(200, 30, 20, 0.5)';
+  ctx.lineWidth = 4;
+  for (const wx of [WALL_PAD - 40, ARENA_W - WALL_PAD + 40]) {
+    const sx = worldToScreenX(wx);
+    ctx.beginPath();
+    ctx.moveTo(sx, groundY + 4);
+    ctx.lineTo(sx + (sx - w / 2) * 0.22, h);
+    ctx.stroke();
+  }
+
+  // ближнее обрамление: воткнутые катаны и фонарь у краёв
+  const near = bg.imgs.near;
+  const nW = Math.max(w * 1.25, ARENA_W * scale * 1.15);
+  const nH = nW * near.height / near.width;
+  ctx.drawImage(near, w / 2 - nW / 2 - worldShift * 0.8, groundY - nH + 14, nW, nH);
+
+  // виньетка
+  const vg = ctx.createRadialGradient(w / 2, h * 0.45, Math.min(w, h) * 0.45, w / 2, h * 0.5, Math.max(w, h) * 0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(4, 1, 2, 0.55)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+}
+
+/* Процедурная арена — запасной вариант, если ассеты фона не загрузились. */
+function drawProceduralArena(ctx, v) {
   const { w, h, camX, scale, groundY, t } = v;
 
   // ---------- небо: кроваво-красная тушь ----------

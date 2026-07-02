@@ -12,6 +12,29 @@ export const sprites = {
   chars: {}, // key -> { atlas, sheets: {name: Image} }
 };
 
+// Фоновые слои параллакса (assets/bg). Грузятся независимо от бойцов.
+export const bg = {
+  ready: false,
+  imgs: {},
+};
+
+async function loadBg() {
+  try {
+    await Promise.all(['sky', 'far', 'near', 'ground'].map(
+      (name) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = 'assets/bg/' + name + '.png';
+        bg.imgs[name] = img;
+      }),
+    ));
+    bg.ready = true;
+  } catch {
+    bg.ready = false;
+  }
+}
+
 async function loadChar(char) {
   const res = await fetch(char.base + 'atlas.json');
   if (!res.ok) throw new Error('no atlas');
@@ -30,6 +53,7 @@ async function loadChar(char) {
 }
 
 export async function loadSprites() {
+  loadBg(); // фон не блокирует бойцов
   try {
     await Promise.all(CHARS.map(loadChar));
     sprites.ready = true;
