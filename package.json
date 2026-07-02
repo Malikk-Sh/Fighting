@@ -1,0 +1,15 @@
+{
+  "name": "arena-strike",
+  "version": "1.0.0",
+  "description": "Мобильный онлайн-файтинг 1v1: авторитетный Node.js + WebSocket сервер, Canvas-клиент",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
