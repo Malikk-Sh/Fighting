@@ -21,6 +21,34 @@ ui.show('screen-menu');
 input.onAnyGesture = unlock;
 game.onCooldown = (cd, total) => input.updateCooldown(cd, total);
 
+/* ---------- полноэкранный режим ---------- */
+
+const fsBtn = document.getElementById('btn-fs');
+const docEl = document.documentElement;
+const fsSupported = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+
+if (!fsSupported) {
+  fsBtn.classList.add('hidden'); // iPhone Safari не умеет Fullscreen API
+} else {
+  const inFullscreen = () => document.fullscreenElement || document.webkitFullscreenElement;
+  fsBtn.addEventListener('click', async () => {
+    try {
+      if (!inFullscreen()) {
+        await (docEl.requestFullscreen ? docEl.requestFullscreen() : docEl.webkitRequestFullscreen());
+        // на Android в полном экране можно зафиксировать альбомную ориентацию
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape').catch(() => {});
+        }
+      } else {
+        await (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen());
+      }
+    } catch { /* пользователь отклонил или API недоступно */ }
+  });
+  const syncIcon = () => { fsBtn.textContent = inFullscreen() ? '✕' : '⛶'; };
+  document.addEventListener('fullscreenchange', syncIcon);
+  document.addEventListener('webkitfullscreenchange', syncIcon);
+}
+
 /* ---------- подключение ---------- */
 
 let connected = false;
