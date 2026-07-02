@@ -21,12 +21,12 @@ function layerFeatures(w, camX, scale, parallax, spacing, fn) {
 export function drawArena(ctx, v) {
   const { w, h, camX, scale, groundY, t } = v;
 
-  // ---------- небо ----------
+  // ---------- небо: кроваво-красная тушь ----------
   const sky = ctx.createLinearGradient(0, 0, 0, groundY);
-  sky.addColorStop(0, '#0d0922');
-  sky.addColorStop(0.45, '#33184c');
-  sky.addColorStop(0.78, '#6e2c54');
-  sky.addColorStop(1, '#d96540');
+  sky.addColorStop(0, '#2a0608');
+  sky.addColorStop(0.45, '#6e120e');
+  sky.addColorStop(0.78, '#a02414');
+  sky.addColorStop(1, '#d8622a');
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, w, groundY);
 
@@ -41,23 +41,21 @@ export function drawArena(ctx, v) {
   }
   ctx.globalAlpha = 1;
 
-  // солнце у горизонта
-  const sunX = w * 0.62 - camX * scale * 0.05;
-  const sunY = groundY - 40 * scale;
-  const glow = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 260 * scale);
-  glow.addColorStop(0, 'rgba(255, 214, 140, 0.9)');
-  glow.addColorStop(0.25, 'rgba(255, 160, 90, 0.35)');
-  glow.addColorStop(1, 'rgba(255, 140, 80, 0)');
+  // белый месяц в верхней части неба
+  const sunX = w * 0.72 - camX * scale * 0.05;
+  const sunY = groundY * 0.22;
+  const glow = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 180 * scale);
+  glow.addColorStop(0, 'rgba(255, 246, 230, 0.5)');
+  glow.addColorStop(1, 'rgba(255, 246, 230, 0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, w, groundY);
-  ctx.fillStyle = '#ffd9a0';
+  ctx.fillStyle = '#f4ede0';
   ctx.beginPath();
-  ctx.arc(sunX, sunY, 46 * scale, 0, Math.PI * 2);
+  ctx.arc(sunX, sunY, 34 * scale, 0, Math.PI * 2);
   ctx.fill();
-  // «срез» солнца горизонтом рисуем ниже слоями
 
-  // облака
-  ctx.fillStyle = 'rgba(60, 30, 70, 0.55)';
+  // чернильные облака
+  ctx.fillStyle = 'rgba(20, 5, 6, 0.7)';
   for (let i = 0; i < 5; i++) {
     const cx = ((sr(i + 40) * 1.4 * w + t * 6 * (0.4 + sr(i))) % (w * 1.4)) - w * 0.2;
     const cy = groundY * (0.2 + sr(i + 50) * 0.35);
@@ -69,7 +67,7 @@ export function drawArena(ctx, v) {
   }
 
   // ---------- слой 1: горы (parallax 0.15) ----------
-  ctx.fillStyle = '#251639';
+  ctx.fillStyle = '#380c0c';
   layerFeatures(w, camX, scale, 0.15, 240 * scale, (x, k) => {
     const mh = (70 + sr(k) * 120) * scale;
     const mw = (160 + sr(k + 7) * 120) * scale;
@@ -82,7 +80,7 @@ export function drawArena(ctx, v) {
   });
 
   // ---------- слой 2: город с пагодами (parallax 0.4) ----------
-  ctx.fillStyle = '#160d2c';
+  ctx.fillStyle = '#150607';
   layerFeatures(w, camX, scale, 0.4, 210 * scale, (x, k) => {
     if (sr(k + 3) > 0.55) {
       drawPagoda(ctx, x, groundY, (0.6 + sr(k) * 0.55) * scale);
@@ -100,21 +98,21 @@ export function drawArena(ctx, v) {
           }
         }
       }
-      ctx.fillStyle = '#160d2c';
+      ctx.fillStyle = '#150607';
     }
   });
 
   // дымка над горизонтом
   const haze = ctx.createLinearGradient(0, groundY - 90 * scale, 0, groundY);
-  haze.addColorStop(0, 'rgba(217, 101, 64, 0)');
-  haze.addColorStop(1, 'rgba(217, 101, 64, 0.35)');
+  haze.addColorStop(0, 'rgba(216, 98, 42, 0)');
+  haze.addColorStop(1, 'rgba(216, 98, 42, 0.4)');
   ctx.fillStyle = haze;
   ctx.fillRect(0, groundY - 90 * scale, w, 90 * scale);
 
   // ---------- слой 3: столбы с фонарями (parallax 0.75) ----------
   layerFeatures(w, camX, scale, 0.75, 330 * scale, (x, k) => {
     const ph = 210 * scale * (0.9 + sr(k + 21) * 0.2);
-    ctx.fillStyle = '#0e0818';
+    ctx.fillStyle = '#0a0304';
     ctx.fillRect(x - 7 * scale, groundY - ph, 14 * scale, ph);
     ctx.fillRect(x - 30 * scale, groundY - ph, 60 * scale, 8 * scale);
     // фонарь
@@ -137,22 +135,22 @@ export function drawArena(ctx, v) {
 
   // ---------- пол: деревянный помост (мировые координаты) ----------
   const floor = ctx.createLinearGradient(0, groundY, 0, h);
-  floor.addColorStop(0, '#6b3c26');
-  floor.addColorStop(0.12, '#553020');
-  floor.addColorStop(1, '#1c0f0c');
+  floor.addColorStop(0, '#a89a88');
+  floor.addColorStop(0.12, '#8a7c6c');
+  floor.addColorStop(1, '#2a221c');
   ctx.fillStyle = floor;
   ctx.fillRect(0, groundY, w, h - groundY);
 
   // тёплый отсвет заката на полу
   const fg = ctx.createRadialGradient(sunX, groundY, 10, sunX, groundY, w * 0.7);
-  fg.addColorStop(0, 'rgba(255, 160, 90, 0.22)');
-  fg.addColorStop(1, 'rgba(255, 160, 90, 0)');
+  fg.addColorStop(0, 'rgba(255, 120, 70, 0.18)');
+  fg.addColorStop(1, 'rgba(255, 120, 70, 0)');
   ctx.fillStyle = fg;
   ctx.fillRect(0, groundY, w, h - groundY);
 
   // доски: швы, расходящиеся в перспективе
   const worldToScreenX = (wx) => (wx - camX) * scale + w / 2;
-  ctx.strokeStyle = 'rgba(20, 8, 6, 0.5)';
+  ctx.strokeStyle = 'rgba(35, 25, 20, 0.22)';
   ctx.lineWidth = 2;
   for (let wx = -600; wx <= ARENA_W + 600; wx += 85) {
     const sx = worldToScreenX(wx);
@@ -163,7 +161,7 @@ export function drawArena(ctx, v) {
     ctx.stroke();
   }
   // горизонтальные стыки досок
-  ctx.strokeStyle = 'rgba(15, 6, 5, 0.35)';
+  ctx.strokeStyle = 'rgba(35, 25, 20, 0.16)';
   for (let i = 1; i <= 3; i++) {
     const y = groundY + (h - groundY) * (i * i) * 0.09;
     ctx.beginPath();
@@ -172,11 +170,11 @@ export function drawArena(ctx, v) {
     ctx.stroke();
   }
   // кромка помоста
-  ctx.fillStyle = 'rgba(255, 205, 150, 0.28)';
+  ctx.fillStyle = 'rgba(255, 248, 235, 0.35)';
   ctx.fillRect(0, groundY, w, 3);
 
   // границы арены
-  ctx.strokeStyle = 'rgba(255, 210, 60, 0.4)';
+  ctx.strokeStyle = 'rgba(200, 30, 20, 0.55)';
   ctx.lineWidth = 4;
   for (const wx of [WALL_PAD - 40, ARENA_W - WALL_PAD + 40]) {
     const sx = worldToScreenX(wx);
@@ -189,7 +187,7 @@ export function drawArena(ctx, v) {
   // ---------- виньетка ----------
   const vg = ctx.createRadialGradient(w / 2, h * 0.45, Math.min(w, h) * 0.45, w / 2, h * 0.5, Math.max(w, h) * 0.75);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(5, 2, 12, 0.55)');
+  vg.addColorStop(1, 'rgba(4, 1, 2, 0.62)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 }

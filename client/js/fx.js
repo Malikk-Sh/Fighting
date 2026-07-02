@@ -19,7 +19,8 @@ export const fx = {
         life: 0.35 + Math.random() * 0.3,
         age: 0,
         size: 2.5 + Math.random() * 4,
-        hue: 20 + Math.random() * 35, // оранжево-жёлтые искры
+        hue: Math.random() < 0.25 ? 40 : Math.random() * 12, // красные чернила + редкие белые искры
+        white: Math.random() < 0.25,
       });
     }
     this.rings.push({ x, y, age: 0, life: 0.28, power });
@@ -79,7 +80,9 @@ export const fx = {
     for (const p of this.particles) {
       const t = p.age / p.life;
       ctx.globalAlpha = 1 - t;
-      ctx.fillStyle = `hsl(${p.hue}, 100%, ${72 - t * 30}%)`;
+      ctx.fillStyle = p.white
+        ? `hsl(40, 30%, ${95 - t * 20}%)`
+        : `hsl(${p.hue}, 90%, ${52 - t * 22}%)`;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size * (1 - t * 0.6), 0, Math.PI * 2);
       ctx.fill();
