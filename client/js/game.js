@@ -3,6 +3,7 @@
 
 import { drawArena } from './arena.js';
 import { FighterView } from './fighter.js';
+import { SpriteFighter, sprites, loadSprites } from './sprites.js';
 import { fx } from './fx.js';
 import { ARENA_W, WALL_PAD, BODY_BLOCK, MOVE_SPEED, ATTACK_COOLDOWN } from './game-const.js';
 
@@ -24,6 +25,8 @@ export class Game {
     this.camX = ARENA_W / 2;
     this.readyAtLocal = 0;
     this.onCooldown = null; // колбэк для индикатора на кнопке
+
+    loadSprites(); // спрайты подхватятся к старту матча; иначе — процедурный рендер
 
     this._lastT = performance.now();
     this._resize();
@@ -49,7 +52,8 @@ export class Game {
     this.phase = 'countdown';
     this.active = true;
     this.readyAtLocal = 0;
-    this.views = [new FighterView(0), new FighterView(1)];
+    const View = sprites.ready ? SpriteFighter : FighterView;
+    this.views = [new View(0), new View(1)];
     fx.reset();
   }
 
@@ -181,6 +185,16 @@ export class Game {
     // мировые координаты: (0,0) — пол в точке camX
     ctx.translate(w / 2 - this.camX * scale, groundY);
     ctx.scale(scale, scale);
+
+    // кольца-подсветки под бойцами: свой — золотое, соперник — тусклое
+    for (let i = 0; i < 2; i++) {
+      const v = this.views[i];
+      ctx.strokeStyle = i === this.myIdx ? 'rgba(255, 205, 90, 0.85)' : 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = i === this.myIdx ? 3.5 : 2.5;
+      ctx.beginPath();
+      ctx.ellipse(v.x, 5, 56, 13, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     // дальний боец рисуется первым (перекрытие ближним)
     const order = this.views[0].x <= this.views[1].x ? [0, 1] : [1, 0];
