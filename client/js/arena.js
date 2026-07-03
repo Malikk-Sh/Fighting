@@ -19,60 +19,45 @@ function layerFeatures(w, camX, scale, parallax, spacing, fn) {
   }
 }
 
+// Индекс текущей сцены. Меняется случайно между матчами (см. pickArenaScene).
+let sceneIdx = 0;
+
+/* Выбрать случайную сцену фона — вызывается при старте матча/реванша,
+ * чтобы задник менялся от боя к бою. */
+export function pickArenaScene() {
+  const n = bg.ready ? bg.scenes.length : 2;
+  sceneIdx = Math.floor(Math.random() * n);
+}
+
 export function drawArena(ctx, v) {
   if (bg.ready) return drawSpriteArena(ctx, v);
   return drawProceduralArena(ctx, v);
 }
 
-/* Арена из сгенерированных слоёв (assets/bg): небо, дальний план,
- * земля, ближнее обрамление — каждый со своим коэффициентом параллакса. */
+/* Арена из статичного изображения (assets/bg/scene-*.png). Картинка целиком
+ * покрывает экран с лёгким горизонтальным параллаксом по камере, поверх —
+ * затемнение зоны боя и виньетка, чтобы светлые бойцы читались. */
 function drawSpriteArena(ctx, v) {
   const { w, h, camX, scale, groundY } = v;
+  const img = bg.scenes[sceneIdx % bg.scenes.length];
+
+  // «cover»-вписывание с запасом по ширине под сдвиг параллакса; нижняя кромка
+  // картинки прижата к низу экрана — помост сцены совпадает с зоной боя
+  const cover = Math.max((w * 1.12) / img.width, h / img.height);
+  const iW = img.width * cover, iH = img.height * cover;
   const worldShift = (camX - ARENA_W / 2) * scale;
-  // задник опущен ниже верхней кромки пола: его нижняя граница (горизонт)
-  // лежит в глубине помоста, поэтому промежутка между фоном и землёй нет
-  const horizon = groundY + (h - groundY) * 0.22;
+  const x = w / 2 - iW / 2 - worldShift * 0.05;
+  ctx.drawImage(img, x, h - iH, iW, iH);
 
-  // небо: рисуется первым, с запасом до «горизонта» ниже кромки пола,
-  // чтобы ни при каких пропорциях экрана не было щели
-  const sky = bg.imgs.sky;
-  const sScale = Math.max(horizon / sky.height, (w * 1.15) / sky.width);
-  const sW = sky.width * sScale, sH = sky.height * sScale;
-  ctx.drawImage(sky, w / 2 - sW / 2 - worldShift * 0.05, horizon - sH, sW, sH);
-
-  // дальний план: бамбук и горящий корабль. Нижние ~10% картинки прозрачны
-  // (контент заканчивается на днище корабля), поэтому слой опускается так,
-  // чтобы плотная часть дошла до горизонта — красное небо не просвечивает
-  const far = bg.imgs.far;
-  const fW = Math.max(w * 1.3, ARENA_W * scale * 1.05);
-  const fH = fW * far.height / far.width;
-  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, horizon - fH * 0.885, fW, fH);
-
-  // тёмная дымка, отделяющая задник от зоны боя (бойцы читаются лучше)
-  const depth = ctx.createLinearGradient(0, groundY - fH * 0.8, 0, groundY);
-  depth.addColorStop(0, 'rgba(12, 2, 3, 0)');
-  depth.addColorStop(1, 'rgba(12, 2, 3, 0.42)');
+  // затемнение к линии боя: светлые силуэты бойцов не сливаются с задником
+  const depth = ctx.createLinearGradient(0, groundY - (h - groundY) * 0.6, 0, h);
+  depth.addColorStop(0, 'rgba(8, 2, 4, 0)');
+  depth.addColorStop(0.7, 'rgba(8, 2, 4, 0.28)');
+  depth.addColorStop(1, 'rgba(8, 2, 4, 0.5)');
   ctx.fillStyle = depth;
-  ctx.fillRect(0, groundY - fH * 0.8, w, fH * 0.8);
+  ctx.fillRect(0, groundY - (h - groundY) * 0.6, w, h - (groundY - (h - groundY) * 0.6));
 
-  // земля: поверх задника — всё, что фон опускал ниже кромки пола,
-  // перекрывается непрозрачным полом (корабль не налезает на землю)
-  const ground = bg.imgs.ground;
-  const gW = Math.max(w * 1.5, ARENA_W * scale * 1.3);
-  ctx.drawImage(ground, w / 2 - gW / 2 - worldShift, groundY, gW, h - groundY);
-  // лёгкое затемнение пола, чтобы белые бойцы не сливались
-  ctx.fillStyle = 'rgba(25, 8, 8, 0.14)';
-  ctx.fillRect(0, groundY, w, h - groundY);
-
-  // «сшивка» планов: тёмная дымка от кромки пола вглубь — смягчает стык
-  const seamH = Math.max(26, (h - groundY) * 0.3);
-  const seam = ctx.createLinearGradient(0, groundY - 2, 0, groundY + seamH);
-  seam.addColorStop(0, 'rgba(14, 3, 4, 0.5)');
-  seam.addColorStop(1, 'rgba(14, 3, 4, 0)');
-  ctx.fillStyle = seam;
-  ctx.fillRect(0, groundY - 2, w, seamH);
-
-  // границы арены — красные метки
+  // границы арены — красные метки на помосте
   const worldToScreenX = (wx) => (wx - camX) * scale + w / 2;
   ctx.strokeStyle = 'rgba(200, 30, 20, 0.5)';
   ctx.lineWidth = 4;
@@ -83,13 +68,6 @@ function drawSpriteArena(ctx, v) {
     ctx.lineTo(sx + (sx - w / 2) * 0.22, h);
     ctx.stroke();
   }
-
-  // ближнее обрамление: воткнутые катаны и фонарь стоят на линии боя
-  const near = bg.imgs.near;
-  const nW = Math.max(w * 1.25, ARENA_W * scale * 1.15);
-  const nH = nW * near.height / near.width;
-  const nearBase = groundY + (h - groundY) * 0.42;
-  ctx.drawImage(near, w / 2 - nW / 2 - worldShift * 0.8, nearBase - nH, nW, nH);
 
   // виньетка
   const vg = ctx.createRadialGradient(w / 2, h * 0.45, Math.min(w, h) * 0.45, w / 2, h * 0.5, Math.max(w, h) * 0.75);

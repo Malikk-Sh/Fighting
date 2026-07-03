@@ -1,7 +1,7 @@
 // Игровой рендер: интерполяция снапшотов сервера, лёгкое предсказание
 // собственного движения, камера, отрисовка арены/бойцов/эффектов.
 
-import { drawArena } from './arena.js';
+import { drawArena, pickArenaScene } from './arena.js';
 import { FighterView } from './fighter.js';
 import { SpriteFighter, sprites, loadSprites } from './sprites.js';
 import { fx } from './fx.js';
@@ -52,6 +52,7 @@ export class Game {
     this.phase = 'countdown';
     this.active = true;
     this.readyAtLocal = 0;
+    pickArenaScene(); // задник случайно меняется от матча к матчу
     const View = sprites.ready ? SpriteFighter : FighterView;
     this.views = [new View(0), new View(1)];
     fx.reset();

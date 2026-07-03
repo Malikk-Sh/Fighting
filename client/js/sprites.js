@@ -12,10 +12,11 @@ export const sprites = {
   chars: {}, // key -> { atlas, sheets: {name: Image} }
 };
 
-// Фоновые слои параллакса (assets/bg). Грузятся независимо от бойцов.
+// Фон арены (assets/bg): два статичных изображения, между которыми матч
+// случайно выбирает одно. Грузятся независимо от бойцов.
 export const bg = {
   ready: false,
-  imgs: {},
+  scenes: [], // массив загруженных Image
 };
 
 // Спрайтовые эффекты (assets/fx): красный взрыв попадания и дуга удара.
@@ -43,13 +44,12 @@ async function loadFx() {
 
 async function loadBg() {
   try {
-    await Promise.all(['sky', 'far', 'near', 'ground'].map(
+    bg.scenes = await Promise.all(['scene-a', 'scene-b'].map(
       (name) => new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve();
+        img.onload = () => resolve(img);
         img.onerror = reject;
         img.src = 'assets/bg/' + name + '.png';
-        bg.imgs[name] = img;
       }),
     ));
     bg.ready = true;
