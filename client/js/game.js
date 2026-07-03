@@ -180,14 +180,17 @@ export class Game {
     }
     this.camX += (camTarget - this.camX) * 0.06;
 
+    // линия боя лежит в глубине помоста, а не на его верхней кромке
+    const fightY = groundY + (h - groundY) * 0.38;
+
     const [shx, shy] = fx.shakeOffset();
     ctx.save();
     ctx.translate(shx, shy);
 
     drawArena(ctx, { w, h, camX: this.camX, scale, groundY, t });
 
-    // мировые координаты: (0,0) — пол в точке camX
-    ctx.translate(w / 2 - this.camX * scale, groundY);
+    // мировые координаты: (0,0) — точка на линии боя в позиции camX
+    ctx.translate(w / 2 - this.camX * scale, fightY);
     ctx.scale(scale, scale);
 
     // кольца-подсветки под бойцами: свой — золотое, соперник — тусклое
