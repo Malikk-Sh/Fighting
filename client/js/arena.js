@@ -47,11 +47,13 @@ function drawSpriteArena(ctx, v) {
   const sW = sky.width * sScale, sH = sky.height * sScale;
   ctx.drawImage(sky, w / 2 - sW / 2 - worldShift * 0.05, horizon - sH, sW, sH);
 
-  // дальний план: бамбук и горящий корабль; туманная кромка на полу
+  // дальний план: бамбук и горящий корабль. Нижние ~10% картинки прозрачны
+  // (контент заканчивается на днище корабля), поэтому слой опускается так,
+  // чтобы плотная часть легла на горизонт — красное небо не просвечивает
   const far = bg.imgs.far;
   const fW = Math.max(w * 1.3, ARENA_W * scale * 1.05);
   const fH = fW * far.height / far.width;
-  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, horizon - fH + 8, fW, fH);
+  ctx.drawImage(far, w / 2 - fW / 2 - worldShift * 0.35, horizon - fH * 0.885, fW, fH);
 
   // тёмная дымка, отделяющая задник от зоны боя (бойцы читаются лучше)
   const depth = ctx.createLinearGradient(0, horizon - fH * 0.8, 0, horizon);
