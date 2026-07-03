@@ -47,6 +47,59 @@ html, body {
   backdrop-filter: blur(3px);
 }
 
+/* ---------- стилизованное меню на фоне арт-задника ---------- */
+#screen-menu {
+  background: #0a0206;
+  overflow: hidden;
+  gap: 16px;
+}
+/* медленный «кен-бёрнс» по арт-заднику */
+#screen-menu::before {
+  content: '';
+  position: absolute; inset: -7%;
+  background: url(assets/bg/scene-b.png) center / cover no-repeat;
+  animation: menu-ken 30s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: -2;
+}
+/* затемнение + тёплая дымка снизу, чтобы текст и кнопки читались */
+#screen-menu::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(130% 90% at 50% 4%, rgba(40, 8, 10, 0.25), rgba(6, 1, 4, 0.8) 68%),
+    linear-gradient(180deg, rgba(6, 1, 4, 0.35) 0%, rgba(6, 1, 4, 0.4) 45%, rgba(90, 20, 10, 0.28) 82%, rgba(6, 1, 4, 0.9) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes menu-ken {
+  from { transform: scale(1.05) translate(-1.5%, -1%); }
+  to   { transform: scale(1.17) translate(1.5%, 2%); }
+}
+
+/* стеклянная панель под кнопками меню */
+#screen-menu .menu-box {
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(24, 7, 9, 0.55), rgba(10, 3, 5, 0.7));
+  border: 1px solid rgba(255, 150, 90, 0.2);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 220, 190, 0.08);
+  backdrop-filter: blur(5px);
+}
+/* тонкий росчерк-разделитель над тайтлом */
+#screen-menu .tagline {
+  position: relative;
+  padding-top: 14px;
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+}
+#screen-menu .tagline::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 132px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 176, 90, 0.75), transparent);
+}
+
 .menu-decor {
   width: min(170px, 38vw);
   margin-bottom: -34px;
@@ -64,6 +117,19 @@ html, body {
   line-height: 0.95;
   display: flex; flex-direction: column;
   text-transform: uppercase;
+  position: relative;
+}
+/* тёплое зарево за логотипом, медленно пульсирует */
+.logo::before {
+  content: '';
+  position: absolute; inset: -30% -18%;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(255, 110, 50, 0.28), rgba(255, 110, 50, 0) 70%);
+  z-index: -1;
+  animation: logo-glow 3.4s ease-in-out infinite;
+}
+@keyframes logo-glow {
+  0%, 100% { opacity: 0.55; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
 .logo span {
   background: linear-gradient(180deg, #ffe9b0 10%, var(--accent-2) 45%, var(--accent) 80%);
