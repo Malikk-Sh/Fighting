@@ -183,7 +183,7 @@ html, body {
 #input-code:focus { border-color: var(--accent-2); }
 
 .error { color: #ff7b6b; font-size: 14px; min-height: 18px; }
-.hint { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom)); font-size: 12px; opacity: 0.4; }
+.hint { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom)); font-size: 12px; opacity: 0.4; pointer-events: none; }
 
 /* ---------- ожидание ---------- */
 .wait-title { font-size: 15px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.6; }

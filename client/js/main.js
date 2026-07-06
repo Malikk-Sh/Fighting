@@ -6,6 +6,7 @@ import { Input } from './input.js';
 import { Game } from './game.js';
 import { ui } from './ui.js';
 import { sfx, unlock } from './audio.js';
+import { setArenaScene } from './arena.js';
 
 const net = new Net();
 const input = new Input();
@@ -123,6 +124,7 @@ net.on('countdown', (msg) => {
   // старт матча (или реванша)
   inMatch = true;
   opponentGone = false;
+  setArenaScene(msg.arena); // задник матча выбрал сервер — у обоих одинаковый
   ui.hideScreens();
   ui.setYou(myIdx);
   ui.resetHp();

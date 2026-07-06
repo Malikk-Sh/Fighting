@@ -19,14 +19,12 @@ function layerFeatures(w, camX, scale, parallax, spacing, fn) {
   }
 }
 
-// Индекс текущей сцены. Меняется случайно между матчами (см. pickArenaScene).
+// Индекс текущей сцены. Выбирает СЕРВЕР на каждый матч и присылает в
+// сообщении countdown — так оба игрока видят один и тот же задник.
 let sceneIdx = 0;
 
-/* Выбрать случайную сцену фона — вызывается при старте матча/реванша,
- * чтобы задник менялся от боя к бою. */
-export function pickArenaScene() {
-  const n = bg.ready ? bg.scenes.length : 2;
-  sceneIdx = Math.floor(Math.random() * n);
+export function setArenaScene(idx) {
+  sceneIdx = Number.isInteger(idx) ? idx : 0;
 }
 
 export function drawArena(ctx, v) {
